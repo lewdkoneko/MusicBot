@@ -1077,7 +1077,7 @@ class MusicBot(discord.Client):
 
         # t-t-th-th-that's all folks!
 
-    def _fetch_avatar(self, user)
+    def _fetch_avatar(self, user):
         if user.is_avatar_animated() is True:
             avatar = user.avatar_url_as(format='gif')
         else:
