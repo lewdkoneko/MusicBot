@@ -492,7 +492,7 @@ class MusicBot(discord.Client):
                 embed.add_field(name="Added by", value=entry.meta['author'].mention)
 
             if self.server_specific_data[channel.guild]['last_np_msg']:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_edit_message(last_np_msg, embed=embed, send_if_fail=True)
+                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_edit_message(last_np_msg, "", embed=embed, send_if_fail=True)
             else:
                 self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_send_message(channel, "", embed=embed)
 
