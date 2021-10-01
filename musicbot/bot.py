@@ -1497,7 +1497,6 @@ class MusicBot(discord.Client):
 
             if position == 1 and player.is_stopped:
                 position = self.str.get('cmd-play-next', 'Up next')
-                reply_text %= (btext, position)
 
             else:
                 try:
@@ -1815,6 +1814,7 @@ class MusicBot(discord.Client):
             embed.color = 0xbc0012
             embed.description = self.str.get('cmd-np-none', 'There are no songs queued! Queue something with {0}play.').format(self.config.command_prefix)
             await channel.send(embed=embed)
+            print(player.current_entry.meta)
 
     async def cmd_summon(self, channel, guild, author, voice_channel):
         """
