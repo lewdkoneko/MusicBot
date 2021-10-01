@@ -492,9 +492,9 @@ class MusicBot(discord.Client):
                 embed.add_field(name="Added by", value=entry.meta['author'].mention)
 
             if self.server_specific_data[channel.guild]['last_np_msg']:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_edit_message(last_np_msg, "", embed=embed, send_if_fail=True)
+                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_edit_message(last_np_msg, " ", embed=embed, send_if_fail=True)
             else:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_send_message(channel, "", embed=embed)
+                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_send_message(channel, " ", embed=embed)
 
         # TODO: Check channel voice state?
 
@@ -1847,7 +1847,7 @@ class MusicBot(discord.Client):
         else:
             embed.color = 0xbc0012
             embed.description = self.str.get('cmd-np-none', 'There are no songs queued! Queue something with {0}play.').format(self.config.command_prefix)
-            await self.safe_send_message(channel, "", embed=embed)
+            await self.safe_send_message(channel, " ", embed=embed)
 
     async def cmd_summon(self, channel, guild, author, voice_channel):
         """
