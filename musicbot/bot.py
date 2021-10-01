@@ -491,10 +491,7 @@ class MusicBot(discord.Client):
                 embed.description = f"<#{player.voice_client.channel.id}>"
                 embed.add_field(name="Added by", value=entry.meta['author'].mention)
 
-            if self.server_specific_data[channel.guild]['last_np_msg']:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await last_np_msg.edit(embed=embed)
-            else:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await channel.send(embed=embed)
+            self.server_specific_data[channel.guild]['last_np_msg'] = await channel.send(embed=embed)
 
         # TODO: Check channel voice state?
 
@@ -1842,7 +1839,7 @@ class MusicBot(discord.Client):
                 embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
                 embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
 
-            self.server_specific_data[guild]['last_np_msg'] = await self.safe_send_message(channel, "", embed=embed)
+            self.server_specific_data[guild]['last_np_msg'] = await channel.send(embed=embed)
             await self._manual_delete_check(message)
         else:
             embed.color = 0xbc0012
