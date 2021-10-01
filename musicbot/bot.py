@@ -1800,8 +1800,8 @@ class MusicBot(discord.Client):
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
                 embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
+                embed.add_field(name="Added by", value=player.current_entry.meta['author'].mention, inline=False)
                 embed.add_field(name="Progress", value=f"`{prog_bar_str}` {prog_str}")
-                embed.add_field(name="Added by", value=player.current_entry.meta['author'].mention)
             else:
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
@@ -1814,7 +1814,7 @@ class MusicBot(discord.Client):
             embed.color = 0xbc0012
             embed.description = self.str.get('cmd-np-none', 'There are no songs queued! Queue something with {0}play.').format(self.config.command_prefix)
             await channel.send(embed=embed)
-            print(player.current_entry.meta)
+        print(player.current_entry.meta)
 
     async def cmd_summon(self, channel, guild, author, voice_channel):
         """
