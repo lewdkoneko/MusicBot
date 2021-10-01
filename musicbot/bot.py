@@ -475,12 +475,7 @@ class MusicBot(discord.Client):
 
             author_perms = self.permissions.for_user(author)
 
-            if author not in player.voice_client.channel.members and author_perms.skip_when_absent:
-                newmsg = 'Skipping next song in `%s`: `%s` added by `%s` as queuer not in voice' % (
-                    player.voice_client.channel.name, entry.title, entry.meta['author'].name)
-                player.skip()
-                embed.description = newmsg
-            elif self.config.now_playing_mentions:
+            if self.config.now_playing_mentions:
                 embed.title = f"Now playing: {entry.title}"
                 embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
                 embed.description = f"<#{player.voice_client.channel.id}>"
