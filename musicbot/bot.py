@@ -1837,7 +1837,7 @@ class MusicBot(discord.Client):
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
                 embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
-                embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
+                embed.add_field(name="Progress", value=f"`{prog_bar_str}` {prog_str}")
 
             self.server_specific_data[guild]['last_np_msg'] = await channel.send(embed=embed)
             await self._manual_delete_check(message)
