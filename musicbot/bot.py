@@ -1373,6 +1373,7 @@ class MusicBot(discord.Client):
                         self.safe_send_message(channel, "```\n%s\n```" % e, expire_in=120), loop=self.loop),
                     retry_on_error=True
                 )
+                print(info)
 
                 if not info:
                     raise exceptions.CommandError(
@@ -1511,7 +1512,7 @@ class MusicBot(discord.Client):
                     traceback.print_exc()
                     time_until = ''
                 if time_until != '':
-                    embed.add_field(name="ETA", description=ftimedelta(time_until))
+                    embed.add_field(name="ETA", value=ftimedelta(time_until))
 
         await channel.send(embed=embed)
 
