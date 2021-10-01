@@ -1284,6 +1284,7 @@ class MusicBot(discord.Client):
         equivalent of the song. Streaming from Spotify is not possible.
         """
 
+        await self.cmd_summon()
         song_url = song_url.strip('<>')
 
         await self.send_typing(channel)
@@ -1878,12 +1879,8 @@ class MusicBot(discord.Client):
             if player.is_stopped:
                 player.play()
 
-            if self.config.auto_playlist:
-                await self.on_player_finished_playing(player)
 
         log.info("Joining {0.guild.name}/{0.name}".format(author.voice.channel))
-
-        return Response(self.str.get('cmd-summon-reply', 'Connected to `{0.name}`').format(author.voice.channel))
 
     async def cmd_pause(self, player):
         """
