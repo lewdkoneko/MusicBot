@@ -1139,7 +1139,7 @@ class MusicBot(discord.Client):
         embed.set_author(name="Reol {}".format(BOTVERSION), icon_url=self._fetch_avatar(user=self.user))
         embed.description = "Showing all commands that you can only use.\nTo see a list of all commands, type `{}help all`\nFor more details on a command, type `{}help command`".format(prefix, prefix)
         embed.add_field(name="Commands", value=' '.join(self.commands))
-        embed.set_footer("© 2021 Waifu Labs")
+        embed.set_footer(text="© 2021 Waifu Labs")
 
         await channel.send(embed=embed)
 
