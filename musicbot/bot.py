@@ -1284,7 +1284,6 @@ class MusicBot(discord.Client):
         equivalent of the song. Streaming from Spotify is not possible.
         """
 
-        await self.cmd_summon()
         song_url = song_url.strip('<>')
 
         await self.send_typing(channel)
