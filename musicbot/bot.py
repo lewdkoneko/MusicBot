@@ -494,7 +494,7 @@ class MusicBot(discord.Client):
             if self.server_specific_data[channel.guild]['last_np_msg']:
                 self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_edit_message(last_np_msg, embed=embed, send_if_fail=True)
             else:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_send_message(channel, embed=embed)
+                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_send_message(channel, "", embed=embed)
 
         # TODO: Check channel voice state?
 
@@ -1797,6 +1797,7 @@ class MusicBot(discord.Client):
 
         Displays the current song in chat.
         """
+        embed = self._gen_embed()
 
         if player.current_entry:
             if self.server_specific_data[guild]['last_np_msg']:
@@ -1826,7 +1827,6 @@ class MusicBot(discord.Client):
                 else:
                     prog_bar_str += "▬"
 
-            embed = self._gen_embed(author=author)
 
             action_text = self.str.get('cmd-np-action-streaming', 'Streaming') if streaming else self.str.get('cmd-np-action-playing', 'Playing')
 
@@ -1850,12 +1850,12 @@ class MusicBot(discord.Client):
                 embed.set_author(name=f"Now {action_text}", icon_url=gifurl)
                 embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
 
-            self.server_specific_data[guild]['last_np_msg'] = await self.safe_send_message(channel, embed=embed)
+            self.server_specific_data[guild]['last_np_msg'] = await self.safe_send_message(channel, "", embed=embed)
             await self._manual_delete_check(message)
         else:
             embed.color = 0xbc0012
             embed.description = self.str.get('cmd-np-none', 'There are no songs queued! Queue something with {0}play.').format(self.config.command_prefix)
-            await self.safe_send_message(channel, embed=embed)
+            await self.safe_send_message(channel, "", embed=embed)
 
     async def cmd_summon(self, channel, guild, author, voice_channel):
         """
