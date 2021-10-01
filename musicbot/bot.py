@@ -461,7 +461,7 @@ class MusicBot(discord.Client):
         channel = entry.meta.get('channel', None)
         author = entry.meta.get('author', None)
 
-        embed = self._gen_embed()
+        embed = self._gen_embed(author=None)
 
         if channel and author:
             last_np_msg = self.server_specific_data[channel.guild]['last_np_msg']
@@ -1797,7 +1797,7 @@ class MusicBot(discord.Client):
 
         Displays the current song in chat.
         """
-        embed = self._gen_embed()
+        embed = self._gen_embed(author=None)
 
         if player.current_entry:
             if self.server_specific_data[guild]['last_np_msg']:
@@ -2738,7 +2738,7 @@ class MusicBot(discord.Client):
             response = await handler(**handler_kwargs)
             if response and isinstance(response, Response):
                 if not isinstance(response.content, discord.Embed) and self.config.embeds:
-                    content = self._gen_embed()
+                    content = self._gen_embed(author=None)
                     content.title = command
                     content.description = response.content
                 else:
@@ -2763,7 +2763,7 @@ class MusicBot(discord.Client):
             alsodelete = message if self.config.delete_invoking else None
 
             if self.config.embeds:
-                content = self._gen_embed()
+                content = self._gen_embed(author=None)
                 content.add_field(name='Error', value=e.message, inline=False)
                 content.colour = 13369344
             else:
