@@ -1417,7 +1417,7 @@ class MusicBot(discord.Client):
                 if num_songs >= 10:
                     etason = fixg(num_songs * wait_per_song)
                     proce.add_field(name="ETA", value=etason)
-                procmesg = await channel.send_message(embed=proce)
+                procmesg = await channel.send(embed=proce)
 
                 # We don't have a pretty way of doing this yet.  We need either a loop
                 # that sends these every 10 seconds or a nice context manager.
@@ -1507,7 +1507,7 @@ class MusicBot(discord.Client):
                 if time_until != '':
                     embed.add_field(name="ETA", description=ftimedelta(time_until))
 
-        await channel.send_message(embed=embed)
+        await channel.send(embed=embed)
 
     async def _cmd_play_playlist_async(self, player, channel, author, permissions, playlist_url, extractor_type):
         """
