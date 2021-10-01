@@ -50,7 +50,7 @@ log = logging.getLogger(__name__)
 class MusicBot(discord.Client):
     def __init__(self, config_file=None, perms_file=None):
         try:
-            sys.stdout.write("\x1b]2;MusicBot {}\x07".format(BOTVERSION))
+            sys.stdout.write("\x1b]2;Reol {}\x07".format(BOTVERSION))
         except:
             pass
 
@@ -81,7 +81,7 @@ class MusicBot(discord.Client):
         self.aiolocks = defaultdict(asyncio.Lock)
         self.downloader = downloader.Downloader(download_folder='audio_cache')
 
-        log.info('Starting MusicBot {}'.format(BOTVERSION))
+        log.info('Starting Reol {}'.format(BOTVERSION))
 
         if not self.autoplaylist:
             log.warning("Autoplaylist is empty, disabling.")
@@ -102,7 +102,7 @@ class MusicBot(discord.Client):
 
         super().__init__()
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
-        self.http.user_agent += ' MusicBot/%s' % BOTVERSION
+        self.http.user_agent += ' Reol-Music-Bot/%s' % BOTVERSION
 
         self.spotify = None
         if self.config._spotify:
@@ -461,6 +461,8 @@ class MusicBot(discord.Client):
         channel = entry.meta.get('channel', None)
         author = entry.meta.get('author', None)
 
+        embed = self._gen_embed(author=author)
+
         if channel and author:
             last_np_msg = self.server_specific_data[channel.guild]['last_np_msg']
             if last_np_msg and last_np_msg.channel == channel:
@@ -477,17 +479,22 @@ class MusicBot(discord.Client):
                 newmsg = 'Skipping next song in `%s`: `%s` added by `%s` as queuer not in voice' % (
                     player.voice_client.channel.name, entry.title, entry.meta['author'].name)
                 player.skip()
+                embed.description = newmsg
             elif self.config.now_playing_mentions:
-                newmsg = '%s - your song `%s` is now playing in `%s`!' % (
-                    entry.meta['author'].mention, entry.title, player.voice_client.channel.name)
+                embed.title = f"Now playing: {entry.title}"
+                embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
+                embed.description = f"<#{player.voice_client.channel.id}>"
+                embed.add_field(name="Added by", value=entry.meta['author'].mention)
             else:
-                newmsg = 'Now playing in `%s`: `%s` added by `%s`' % (
-                    player.voice_client.channel.name, entry.title, entry.meta['author'].name)
+                embed.title = f"Now playing: {entry.title}"
+                embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
+                embed.description = f"<#{player.voice_client.channel.id}>"
+                embed.add_field(name="Added by", value=entry.meta['author'].mention)
 
             if self.server_specific_data[channel.guild]['last_np_msg']:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_edit_message(last_np_msg, newmsg, send_if_fail=True)
+                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_edit_message(last_np_msg, embed=embed, send_if_fail=True)
             else:
-                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_send_message(channel, newmsg)
+                self.server_specific_data[channel.guild]['last_np_msg'] = await self.safe_send_message(channel, embed=embed)
 
         # TODO: Check channel voice state?
 
@@ -1070,12 +1077,22 @@ class MusicBot(discord.Client):
 
         # t-t-th-th-that's all folks!
 
-    def _gen_embed(self):
+    def _fetch_avatar(self, user)
+        if user.is_avatar_animated() is True:
+            avatar = user.avatar_url_as(format='gif')
+        else:
+            avatar = user.avatar_url_as(format='png')
+
+        return avatar
+
+    def _gen_embed(self, author=None):
         """Provides a basic template for embeds"""
         e = discord.Embed()
-        e.colour = 7506394
-        e.set_footer(text='Just-Some-Bots/MusicBot ({})'.format(BOTVERSION), icon_url='https://i.imgur.com/gFHBoZA.png')
-        e.set_author(name=self.user.name, url='https://github.com/Just-Some-Bots/MusicBot', icon_url=self.user.avatar_url)
+        e.colour = 0x00D8FF
+        if author is not None:
+            e.set_footer(text=f"Requested by {author}", icon_url=self._fetch_avatar(user=author))
+        else:
+            e.set_footer(text=f"Reol {BOTVERSION}", icon_url=self._fetch_avatar(user=self.user))
         return e
 
     async def cmd_resetplaylist(self, player, channel):
@@ -1125,8 +1142,7 @@ class MusicBot(discord.Client):
             await self.gen_cmd_list(message)
 
         desc = '```\n' + ', '.join(self.commands) + '\n```\n' + self.str.get(
-            'cmd-help-response', 'For information about a particular command, run `{}help [command]`\n'
-                                 'For further help, see https://just-some-bots.github.io/MusicBot/').format(prefix)
+            'cmd-help-response', 'For information about a particular command, run `{}help [command]`\n').format(prefix)
         if not self.is_all:
             desc += self.str.get('cmd-help-all', '\nOnly showing commands you can use, for a list of all commands, run `{}help all`').format(prefix)
 
@@ -1479,7 +1495,7 @@ class MusicBot(discord.Client):
                         expire_in=30
                     )
 
-                reply_text = self.str.get('cmd-play-playlist-reply', "Enqueued **%s** songs to be played. Position in queue: %s")
+                reply_text = self.str.get('cmd-play-playlist-reply', "Enqueued **%s** songs to be played.\nPosition in queue: **%s**")
                 btext = str(listlen - drop_count)
 
             else:
@@ -1512,7 +1528,7 @@ class MusicBot(discord.Client):
 
 
             if position == 1 and player.is_stopped:
-                position = self.str.get('cmd-play-next', 'Up next!')
+                position = self.str.get('cmd-play-next', 'Up next')
                 reply_text %= (btext, position)
 
             else:
@@ -1805,40 +1821,41 @@ class MusicBot(discord.Client):
             # create the actual bar
             progress_bar_length = 30
             for i in range(progress_bar_length):
-                if (percentage < 1 / progress_bar_length * i):
-                    prog_bar_str += '□'
+                if percentage < 1 / progress_bar_length * i and "🔘" not in prog_bar_str:
+                    prog_bar_str += "🔘"
                 else:
-                    prog_bar_str += '■'
+                    prog_bar_str += "▬"
+
+            embed = self._gen_embed(author=author)
 
             action_text = self.str.get('cmd-np-action-streaming', 'Streaming') if streaming else self.str.get('cmd-np-action-playing', 'Playing')
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                np_text = self.str.get('cmd-np-reply-author', "Now {action}: **{title}** added by **{author}**\nProgress: {progress_bar} {progress}\n\N{WHITE RIGHT POINTING BACKHAND INDEX} <{url}>").format(
-                    action=action_text,
-                    title=player.current_entry.title,
-                    author=player.current_entry.meta['author'].name,
-                    progress_bar=prog_bar_str,
-                    progress=prog_str,
-                    url=player.current_entry.url
-                )
+                embed.title = player.current_entry.title
+                embed.url = player.current_entry.url
+                if action.text = "paused":
+                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752366983491616768/pause.gif"
+                elif action.text = "playing":
+                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif"
+                embed.set_author(name=f"Now {action_text}", icon_url=gifurl)
+                embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
+                embed.add_field(name="Added by", value=player.current_entry.meta['author'].mention)
             else:
+                embed.title = player.current_entry.title
+                embed.url = player.current_entry.url
+                if action.text = "paused":
+                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752366983491616768/pause.gif"
+                elif action.text = "playing":
+                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif"
+                embed.set_author(name=f"Now {action_text}", icon_url=gifurl)
+                embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
 
-                np_text = self.str.get('cmd-np-reply-noauthor', "Now {action}: **{title}**\nProgress: {progress_bar} {progress}\n\N{WHITE RIGHT POINTING BACKHAND INDEX} <{url}>").format(
-
-                    action=action_text,
-                    title=player.current_entry.title,
-                    progress_bar=prog_bar_str,
-                    progress=prog_str,
-                    url=player.current_entry.url
-                )
-
-            self.server_specific_data[guild]['last_np_msg'] = await self.safe_send_message(channel, np_text)
+            self.server_specific_data[guild]['last_np_msg'] = await self.safe_send_message(channel, embed=embed)
             await self._manual_delete_check(message)
         else:
-            return Response(
-                self.str.get('cmd-np-none', 'There are no songs queued! Queue something with {0}play.') .format(self.config.command_prefix),
-                delete_after=30
-            )
+            embed.color = 0xbc0012
+            embed.description = self.str.get('cmd-np-none', 'There are no songs queued! Queue something with {0}play.').format(self.config.command_prefix)
+            await self.safe_send_message(channel, embed=embed)
 
     async def cmd_summon(self, channel, guild, author, voice_channel):
         """
