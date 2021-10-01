@@ -1239,39 +1239,6 @@ class MusicBot(discord.Client):
             reply=True, delete_after=30
         )
 
-    async def cmd_karaoke(self, player, channel, author):
-        """
-        Usage:
-            {command_prefix}karaoke
-
-        Activates karaoke mode. During karaoke mode, only groups with the BypassKaraokeMode
-        permission in the config file can queue music.
-        """
-        player.karaoke_mode = not player.karaoke_mode
-        return Response("\N{OK HAND SIGN} Karaoke mode is now " + ['disabled', 'enabled'][player.karaoke_mode], delete_after=15)
-
-    async def _do_playlist_checks(self, permissions, player, author, testobj):
-        num_songs = sum(1 for _ in testobj)
-
-        # I have to do exe extra checks anyways because you can request an arbitrary number of search results
-        if not permissions.allow_playlists and num_songs > 1:
-            raise exceptions.PermissionsError(self.str.get('playlists-noperms', "You are not allowed to request playlists"), expire_in=30)
-
-        if permissions.max_playlist_length and num_songs > permissions.max_playlist_length:
-            raise exceptions.PermissionsError(
-                self.str.get('playlists-big', "Playlist has too many entries ({0} > {1})").format(num_songs, permissions.max_playlist_length),
-                expire_in=30
-            )
-
-        # This is a little bit weird when it says (x + 0 > y), I might add the other check back in
-        if permissions.max_songs and player.playlist.count_for_user(author) + num_songs > permissions.max_songs:
-            raise exceptions.PermissionsError(
-                self.str.get('playlists-limit', "Playlist entries + your already queued songs reached limit ({0} + {1} > {2})").format(
-                    num_songs, player.playlist.count_for_user(author), permissions.max_songs),
-                expire_in=30
-            )
-        return True
-
     async def cmd_play(self, message, player, channel, author, permissions, leftover_args, song_url):
         """
         Usage:
@@ -1306,6 +1273,8 @@ class MusicBot(discord.Client):
         matches = re.search(playlistRegex, song_url)
         groups = matches.groups() if matches is not None else []
         song_url = "https://www.youtube.com/playlist?" + groups[0] if len(groups) > 0 else song_url
+
+        embed = self._gen_embed(author=author)
 
         if self.config._spotify:
             if 'open.spotify.com' in song_url:
@@ -1442,12 +1411,13 @@ class MusicBot(discord.Client):
                 # Different playlists might download at different speeds though
                 wait_per_song = 1.2
 
-                procmesg = await self.safe_send_message(
-                    channel,
-                    self.str.get('cmd-play-playlist-gathering-1', 'Gathering playlist information for {0} songs{1}').format(
-                        num_songs,
-                        self.str.get('cmd-play-playlist-gathering-2', ', ETA: {0} seconds').format(fixg(
-                            num_songs * wait_per_song)) if num_songs >= 10 else '.'))
+                proce = self._gen_embed(author=author)
+                proce.title = "Processing playlist..."
+                proce.description = f"Retrieving **{num_songs}** songs"
+                if num_songs >= 10:
+                    etason = fixg(num_songs * wait_per_song)
+                    proce.add_field(name="ETA", value=etason)
+                procmesg = await channel.send_message(embed=proce)
 
                 # We don't have a pretty way of doing this yet.  We need either a loop
                 # that sends these every 10 seconds or a nice context manager.
@@ -1490,8 +1460,9 @@ class MusicBot(discord.Client):
                         expire_in=30
                     )
 
-                reply_text = self.str.get('cmd-play-playlist-reply', "Enqueued **%s** songs to be played.\nPosition in queue: **%s**")
                 btext = str(listlen - drop_count)
+                embed.title = "Added {} songs to queue".format(btext)
+                embed.add_field(name="Position in queue", value=position)
 
             else:
                 if info.get('extractor', '').startswith('youtube:playlist'):
@@ -1518,8 +1489,10 @@ class MusicBot(discord.Client):
 
                     return await self.cmd_play(player, channel, author, permissions, leftover_args, e.use_url)
 
-                reply_text = self.str.get('cmd-play-song-reply', "Enqueued `%s` to be played. Position in queue: %s")
                 btext = entry.title
+                embed.title = "Added song to queue"
+                embed.description = btext
+                embed.add_field(name="Position in queue", value=position)
 
 
             if position == 1 and player.is_stopped:
@@ -1529,14 +1502,13 @@ class MusicBot(discord.Client):
             else:
                 try:
                     time_until = await player.playlist.estimate_time_until(position, player)
-                    reply_text += self.str.get('cmd-play-eta', ' - estimated time until playing: %s')
                 except:
                     traceback.print_exc()
                     time_until = ''
+                if time_until != '':
+                    embed.add_field(name="ETA", description=ftimedelta(time_until))
 
-                reply_text %= (btext, position, ftimedelta(time_until))
-
-        return Response(reply_text, delete_after=30)
+        await channel.send_message(embed=embed)
 
     async def _cmd_play_playlist_async(self, player, channel, author, permissions, playlist_url, extractor_type):
         """
