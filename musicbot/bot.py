@@ -461,7 +461,7 @@ class MusicBot(discord.Client):
         channel = entry.meta.get('channel', None)
         author = entry.meta.get('author', None)
 
-        embed = self._gen_embed(author=author)
+        embed = self._gen_embed()
 
         if channel and author:
             last_np_msg = self.server_specific_data[channel.guild]['last_np_msg']
@@ -1833,21 +1833,13 @@ class MusicBot(discord.Client):
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
-                if action.text == "paused":
-                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752366983491616768/pause.gif"
-                elif action.text == "playing":
-                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif"
-                embed.set_author(name=f"Now {action_text}", icon_url=gifurl)
+                embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
                 embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
                 embed.add_field(name="Added by", value=player.current_entry.meta['author'].mention)
             else:
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
-                if action.text == "paused":
-                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752366983491616768/pause.gif"
-                elif action.text == "playing":
-                    gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif"
-                embed.set_author(name=f"Now {action_text}", icon_url=gifurl)
+                embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
                 embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
 
             self.server_specific_data[guild]['last_np_msg'] = await self.safe_send_message(channel, "", embed=embed)
