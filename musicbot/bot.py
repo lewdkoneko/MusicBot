@@ -1833,9 +1833,9 @@ class MusicBot(discord.Client):
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
-                if action.text = "paused":
+                if action.text == "paused":
                     gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752366983491616768/pause.gif"
-                elif action.text = "playing":
+                elif action.text == "playing":
                     gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif"
                 embed.set_author(name=f"Now {action_text}", icon_url=gifurl)
                 embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
@@ -1843,9 +1843,9 @@ class MusicBot(discord.Client):
             else:
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
-                if action.text = "paused":
+                if action.text == "paused":
                     gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752366983491616768/pause.gif"
-                elif action.text = "playing":
+                elif action.text == "playing":
                     gifurl = "https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif"
                 embed.set_author(name=f"Now {action_text}", icon_url=gifurl)
                 embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
