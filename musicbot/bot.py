@@ -1080,11 +1080,17 @@ class MusicBot(discord.Client):
     def _gen_embed(self, author=None):
         """Provides a basic template for embeds"""
         e = discord.Embed()
-        e.colour = 0x00D8FF
+        e.color = 0x00D8FF
         if author is not None:
             e.set_footer(text=f"Requested by {author}", icon_url=self._fetch_avatar(user=author))
         else:
             e.set_footer(text=f"Reol {BOTVERSION}", icon_url=self._fetch_avatar(user=self.user))
+        return e
+
+    def _gen_err(self):
+        e = discord.Embed()
+        e.color = 0xBC0012
+        e.description = "**Error:** "
         return e
 
     async def cmd_resetplaylist(self, player, channel):
@@ -1814,7 +1820,7 @@ class MusicBot(discord.Client):
             embed.color = 0xbc0012
             embed.description = self.str.get('cmd-np-none', 'There are no songs queued! Queue something with {0}play.').format(self.config.command_prefix)
             await channel.send(embed=embed)
-        print(player.current_entry.meta)
+        print(player.current_entry)
 
     async def cmd_summon(self, channel, guild, author, voice_channel):
         """
