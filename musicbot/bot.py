@@ -1110,6 +1110,8 @@ class MusicBot(discord.Client):
         self.is_all = False
         prefix = self.config.command_prefix
 
+        embed = self._gen_embed(author=message.author)
+
         if command:
             if command.lower() == 'all':
                 self.is_all = True
@@ -1133,12 +1135,13 @@ class MusicBot(discord.Client):
         else:
             await self.gen_cmd_list(message)
 
-        desc = '```\n' + ', '.join(self.commands) + '\n```\n' + self.str.get(
-            'cmd-help-response', 'For information about a particular command, run `{}help [command]`\n').format(prefix)
-        if not self.is_all:
-            desc += self.str.get('cmd-help-all', '\nOnly showing commands you can use, for a list of all commands, run `{}help all`').format(prefix)
+        embed.title = "Help Menu"
+        embed.set_author(name="Reol {}".format(BOTVERSION), icon_url=self._fetch_avatar(user=self.user))
+        embed.description = "Showing all commands that you can only use.\nTo see a list of all commands, type `{}help all`\nFor more details on a command, type `{}help command`".format(prefix, prefix)
+        embed.add_field(name="Commands", value=' '.join(self.commands))
+        embed.set_footer("© 2021 Waifu Labs")
 
-        return Response(desc, reply=True, delete_after=60)
+        await channel.send(embed=embed)
 
     async def cmd_blacklist(self, message, user_mentions, option, something):
         """
@@ -1826,7 +1829,7 @@ class MusicBot(discord.Client):
                 embed.title = player.current_entry.title
                 embed.url = player.current_entry.url
                 embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
-                embed.add_field(name="Progress", value=f"{prog_bar_str} {prog_str}")
+                embed.add_field(name="Progress", value=f"`{prog_bar_str}` {prog_str}")
                 embed.add_field(name="Added by", value=player.current_entry.meta['author'].mention)
             else:
                 embed.title = player.current_entry.title
@@ -2789,7 +2792,7 @@ class MusicBot(discord.Client):
                 whitelist = user_permissions.command_whitelist
                 blacklist = user_permissions.command_blacklist
                 if list_all_cmds:
-                    self.commands.append('{}{}'.format(self.config.command_prefix, command_name))
+                    self.commands.append('`{}`'.format(command_name))
 
                 elif blacklist and command_name in blacklist:
                     pass
@@ -2798,7 +2801,7 @@ class MusicBot(discord.Client):
                     pass
 
                 else:
-                    self.commands.append("{}{}".format(self.config.command_prefix, command_name))
+                    self.commands.append("{}".format(command_name))
 
     async def on_voice_state_update(self, member, before, after):
         if not self.init_ok:
