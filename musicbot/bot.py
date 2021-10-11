@@ -2259,18 +2259,18 @@ class MusicBot(discord.Client):
             current = "N/A"
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                current = "`{0}`\nAdded by {1}\n{2}\n".format(
+                current = "`{}`\nAdded by {}\n{}\n".format(
                     player.current_entry.title, player.current_entry.meta['author'].mention, prog_str)
             else:
-                current = "`{0}`\n{1}\n".format(
+                current = "`{}`\n{}\n".format(
                     player.current_entry.title, prog_str)
 
 
         for i, item in enumerate(player.playlist, 1):
             if item.meta.get('channel', False) and item.meta.get('author', False):
-                nextline = '**{0}.** `{1}` (by {2})'.format(i, item.title, item.meta['author'].mention).strip()
+                nextline = '**{}.** `{}` (by {})'.format(i, item.title, item.meta['author'].mention)
             else:
-                nextline = 'cmd-queue-entry-noauthor', '**{0}.** `{1}`'.format(i, item.title).strip()
+                nextline = 'cmd-queue-entry-noauthor', '**{}.** `{}`'.format(i, item.title)
 
             currentlinesum = sum(len(x) + 1 for x in lines)  # +1 is for newline char
 
