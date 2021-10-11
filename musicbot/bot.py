@@ -2270,7 +2270,7 @@ class MusicBot(discord.Client):
             if item.meta.get('channel', False) and item.meta.get('author', False):
                 nextline = '**{}.** `{}` (by {})'.format(i, item.title, item.meta['author'].mention)
             else:
-                nextline = 'cmd-queue-entry-noauthor', '**{}.** `{}`'.format(i, item.title)
+                nextline = '**{}.** `{}`'.format(i, item.title)
 
             currentlinesum = sum(len(x) + 1 for x in lines)  # +1 is for newline char
 
@@ -2287,8 +2287,6 @@ class MusicBot(discord.Client):
         if not lines:
             lines.append(f'There are no songs queued! Queue something with {self.config.command_prefix}play.')
 
-        print(lines)
-        
         queuelist = '\n'.join(lines)
         e.set_author(name=f"{guild.name} Queue", icon_url=self._fetch_icon(guild=guild))
         e.title = "Currently playing"
