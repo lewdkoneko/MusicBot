@@ -1077,6 +1077,14 @@ class MusicBot(discord.Client):
 
         return avatar
 
+    def _fetch_icon(self, guild):
+        if guild.is_icon_animated() is True:
+            avatar = guild.icon_url_as(format='gif')
+        else:
+            avatar = guild.icon_url_as(format='png')
+
+        return avatar
+
     def _gen_embed(self, author=None):
         """Provides a basic template for embeds"""
         e = discord.Embed()
@@ -2248,21 +2256,21 @@ class MusicBot(discord.Client):
             song_total = ftimedelta(timedelta(seconds=player.current_entry.duration))
             prog_str = '`[%s/%s]`' % (song_progress, song_total)
 
-            current = "**Currently playing:** N/A"
+            current = "N/A"
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                current = "**Currently playing:** `{0}`\nAdded by {1}\n{2}\n".format(
+                current = "`{0}`\nAdded by {1}\n{2}\n".format(
                     player.current_entry.title, player.current_entry.meta['author'].mention, prog_str)
             else:
-                current = "**Currently playing:** `{0}`\n{1}\n".format(
+                current = "`{0}`\n{1}\n".format(
                     player.current_entry.title, prog_str)
 
 
         for i, item in enumerate(player.playlist, 1):
             if item.meta.get('channel', False) and item.meta.get('author', False):
-                nextline = self.str.get('cmd-queue-entry-author', '**{0}.** `{1}` (by {2})').format(i, item.title, item.meta['author'].mention).strip()
+                nextline = '**{0}.** `{1}` (by {2})'.format(i, item.title, item.meta['author'].mention).strip()
             else:
-                nextline = self.str.get('cmd-queue-entry-noauthor', '**{0}.** `{1}`').format(i, item.title).strip()
+                nextline = 'cmd-queue-entry-noauthor', '**{0}.** `{1}`'.format(i, item.title).strip()
 
             currentlinesum = sum(len(x) + 1 for x in lines)  # +1 is for newline char
 
@@ -2274,14 +2282,14 @@ class MusicBot(discord.Client):
             lines.append(nextline)
 
         if unlisted:
-            lines.append(self.str.get('cmd-queue-more', '\n... and %s more') % unlisted)
+            lines.append(f'\n... and {unlisted} more')
 
         if not lines:
-            lines.append(
-                self.str.get('cmd-queue-none', 'There are no songs queued! Queue something with {}play.').format(self.config.command_prefix))
+            lines.append(f'There are no songs queued! Queue something with {self.config.command_prefix}play.')
 
         queuelist = '\n'.join(lines)
-        e.title = f"{guild.name} Queue"
+        e.set_author(name=f"{guild.name} Queue", icon_url=self._fetch_icon(guild=guild))
+        e.title = "Currently playing"
         e.description = current
         e.add_field(name="Next in Queue", value=queuelist)
         await channel.send(embed=e)
