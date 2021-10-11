@@ -1786,7 +1786,7 @@ class MusicBot(discord.Client):
             e.description = ":play_pause: Queue is no longer on loop!"
         await channel.send(embed=e)
 
-    async def cmd_repeat(self, channel):
+    async def cmd_repeat(self, channel, author):
         """
         Usage:
             {command_prefix}repeat
@@ -1809,7 +1809,7 @@ class MusicBot(discord.Client):
             e.description = ":play_pause: Song is no longer on repeat!"
         await channel.send(embed=e)
 
-    async def cmd_move(self, command, leftover_args, channel):
+    async def cmd_move(self, command, leftover_args, channel, author):
         """
         Usage:
             {command_prefix}move {Index of song to move} {Index to move song to}
@@ -1823,6 +1823,7 @@ class MusicBot(discord.Client):
                 "Use %ssummon to summon it to your voice channel."
                 % self.config.command_prefix
             )
+        e = self._gen_embed(author=author)
         indexes = []
         try:
             indexes.append(int(command) - 1)
@@ -1837,6 +1838,9 @@ class MusicBot(discord.Client):
         song = player.playlist.delete_entry_at_index(indexes[0])
 
         player.playlist.insert_entry_at_index(indexes[1], song)
+
+        e.description = "Moved songs around."
+        await channel.send(embed=e)
 
 
 
@@ -2224,7 +2228,7 @@ class MusicBot(discord.Client):
             else:
                 raise exceptions.CommandError(self.str.get('cmd-option-invalid-param' ,'The parameters provided were invalid.'))
 
-    async def cmd_queue(self, channel, player):
+    async def cmd_queue(self, channel, guild, player, author):
         """
         Usage:
             {command_prefix}queue
@@ -2236,24 +2240,29 @@ class MusicBot(discord.Client):
         unlisted = 0
         andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
 
+        e = self._gen_embed(author=author)
+
         if player.is_playing:
             # TODO: Fix timedelta garbage with util function
             song_progress = ftimedelta(timedelta(seconds=player.progress))
             song_total = ftimedelta(timedelta(seconds=player.current_entry.duration))
             prog_str = '`[%s/%s]`' % (song_progress, song_total)
 
+            current = "**Currently playing:** N/A"
+
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                lines.append(self.str.get('cmd-queue-playing-author', "Currently playing: `{0}` added by `{1}` {2}\n").format(
-                    player.current_entry.title, player.current_entry.meta['author'].name, prog_str))
+                current = "**Currently playing:** `{0}`\nAdded by {1}\n{2}\n".format(
+                    player.current_entry.title, player.current_entry.meta['author'].mention, prog_str)
             else:
-                lines.append(self.str.get('cmd-queue-playing-noauthor', "Currently playing: `{0}` {1}\n").format(player.current_entry.title, prog_str))
+                current = "**Currently playing:** `{0}`\n{1}\n".format(
+                    player.current_entry.title, prog_str)
 
 
         for i, item in enumerate(player.playlist, 1):
             if item.meta.get('channel', False) and item.meta.get('author', False):
-                nextline = self.str.get('cmd-queue-entry-author', '{0} -- `{1}` by `{2}`').format(i, item.title, item.meta['author'].name).strip()
+                nextline = self.str.get('cmd-queue-entry-author', '**{0}.** `{1}` (by {2})').format(i, item.title, item.meta['author'].mention).strip()
             else:
-                nextline = self.str.get('cmd-queue-entry-noauthor', '{0} -- `{1}`').format(i, item.title).strip()
+                nextline = self.str.get('cmd-queue-entry-noauthor', '**{0}.** `{1}`').format(i, item.title).strip()
 
             currentlinesum = sum(len(x) + 1 for x in lines)  # +1 is for newline char
 
@@ -2271,8 +2280,11 @@ class MusicBot(discord.Client):
             lines.append(
                 self.str.get('cmd-queue-none', 'There are no songs queued! Queue something with {}play.').format(self.config.command_prefix))
 
-        message = '\n'.join(lines)
-        return Response(message, delete_after=30)
+        queuelist = '\n'.join(lines)
+        e.title = f"{guild.name} Queue"
+        e.description = current
+        e.add_field(name="Next in Queue", value=queuelist)
+        await channel.send(embed=e)
 
     async def cmd_clean(self, message, channel, guild, author, search_range=50):
         """
