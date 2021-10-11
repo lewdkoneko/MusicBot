@@ -1763,6 +1763,83 @@ class MusicBot(discord.Client):
 
         return Response(self.str.get('cmd-search-decline', "Oh well :("), delete_after=30)
 
+    async def cmd_loop(self, channel, author):
+        """
+        Usage:
+            {command_prefix}loop
+        Toggles queue looping on or off.
+        """
+        player = self.get_player_in(channel.guild)
+        if not player:
+            raise exceptions.CommandError(
+                "The bot is not in a voice channel.  "
+                "Use %ssummon to summon it to your voice channel."
+                % self.config.command_prefix
+            )
+        player.loopqueue = not player.loopqueue
+
+        e = self._gen_embed(author=author)
+
+        if player.loopqueue:
+            e.description = ":repeat: Queue is now on loop!"
+        else:
+            e.description = ":play_pause: Queue is no longer on loop!"
+        await channel.send(embed=e)
+
+    async def cmd_repeat(self, channel):
+        """
+        Usage:
+            {command_prefix}repeat
+        Toggles song looping on and off.
+        """
+        player = self.get_player_in(channel.guild)
+        if not player:
+            raise exceptions.CommandError(
+                "The bot is not in a voice channel.  "
+                "Use %ssummon to summon it to your voice channel."
+                % self.config.command_prefix
+            )
+        player.repeatsong = not player.repeatsong
+
+        e = self._gen_embed(author=author)
+
+        if player.repeatsong:
+            e.description = ":repeat_one: Song is now on repeat!"
+        else:
+            e.description = ":play_pause: Song is no longer on repeat!"
+        await channel.send(embed=e)
+
+    async def cmd_move(self, command, leftover_args, channel):
+        """
+        Usage:
+            {command_prefix}move {Index of song to move} {Index to move song to}
+            Ex: !move 1 3
+        Swaps the location of a song within the playlist.
+        """
+        player = self.get_player_in(channel.guild)
+        if not player:
+            raise exceptions.CommandError(
+                "The bot is not in a voice channel.  "
+                "Use %ssummon to summon it to your voice channel."
+                % self.config.command_prefix
+            )
+        indexes = []
+        try:
+            indexes.append(int(command) - 1)
+            indexes.append(int(leftover_args[0]) - 1)
+        except:
+            return Response("Song indexes must be integers!", delete_after=30)
+
+        for i in indexes:
+            if i < 0 or i > player.playlist.entries.__len__()-1:
+                return Response("Sent indexes are outside of the playlist scope!", delete_after=30)
+
+        song = player.playlist.delete_entry_at_index(indexes[0])
+
+        player.playlist.insert_entry_at_index(indexes[1], song)
+
+
+
     async def cmd_np(self, player, channel, guild, message):
         """
         Usage:
@@ -1804,16 +1881,11 @@ class MusicBot(discord.Client):
             action_text = self.str.get('cmd-np-action-streaming', 'Streaming') if streaming else self.str.get('cmd-np-action-playing', 'Playing')
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
-                embed.title = player.current_entry.title
-                embed.url = player.current_entry.url
-                embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
                 embed.add_field(name="Added by", value=player.current_entry.meta['author'].mention, inline=False)
-                embed.add_field(name="Progress", value=f"`{prog_bar_str}` {prog_str}")
-            else:
-                embed.title = player.current_entry.title
-                embed.url = player.current_entry.url
-                embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
-                embed.add_field(name="Progress", value=f"`{prog_bar_str}` {prog_str}")
+            embed.title = player.current_entry.title
+            embed.url = player.current_entry.url
+            embed.set_author(name=f"Now playing", icon_url="https://cdn.discordapp.com/attachments/741925351609073711/752373242731167954/NowPlaying.gif")
+            embed.add_field(name="Progress", value=f"`{prog_bar_str}` {prog_str}")
 
             self.server_specific_data[guild]['last_np_msg'] = await channel.send(embed=embed)
             await self._manual_delete_check(message)
