@@ -2287,6 +2287,8 @@ class MusicBot(discord.Client):
         if not lines:
             lines.append(f'There are no songs queued! Queue something with {self.config.command_prefix}play.')
 
+        print(lines)
+        
         queuelist = '\n'.join(lines)
         e.set_author(name=f"{guild.name} Queue", icon_url=self._fetch_icon(guild=guild))
         e.title = "Currently playing"
