@@ -2249,14 +2249,13 @@ class MusicBot(discord.Client):
         andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
 
         e = self._gen_embed(author=author)
+        current = "N/A"
 
         if player.is_playing:
             # TODO: Fix timedelta garbage with util function
             song_progress = ftimedelta(timedelta(seconds=player.progress))
             song_total = ftimedelta(timedelta(seconds=player.current_entry.duration))
             prog_str = '`[%s/%s]`' % (song_progress, song_total)
-
-            current = "N/A"
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
                 current = "`{}`\nAdded by {}\n{}\n".format(
